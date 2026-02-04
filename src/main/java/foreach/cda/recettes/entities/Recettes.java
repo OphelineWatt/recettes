@@ -1,11 +1,19 @@
 package foreach.cda.recettes.entities;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-public class Recette {
+@Getter
+@Setter
+@Entity
+@Table(name = "recettes")
+public class Recettes {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -20,5 +28,9 @@ public class Recette {
 
     @Column(name="nombre_calorique")
     private int nombreCalorique;
+
+    @Column(name = "partage", nullable = false)
+    private boolean partage;
     
 }
+
