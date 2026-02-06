@@ -55,5 +55,5 @@ public class User {
 
 
     @OneToMany(mappedBy = "user", targetEntity = Recettes.class, fetch=FetchType.LAZY)
-    List<Recettes> commandes;
+    private List<Recettes> recettes;
 }
