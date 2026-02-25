@@ -1,11 +1,9 @@
 package foreach.cda.recettes.dtos;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-public class UserLoginDTO {
+public class UserLoginRequestDto {
     private String mail;
     private String password;
 }

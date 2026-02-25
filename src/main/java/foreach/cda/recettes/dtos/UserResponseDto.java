@@ -5,11 +5,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserCreateDTO {
+public class UserResponseDto {
+    private Integer idUser;
     private String nom;
     private String prenom;
     private Boolean role;
-    private String password;
     private String telephone;
     private String mail;
 }
