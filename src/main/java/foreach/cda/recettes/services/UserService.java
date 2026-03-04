@@ -46,8 +46,9 @@ public UserResponseDto findById(Integer id) {
 
 public UserResponseDto updateUser(Integer id, UserRequestDto dto) {
 
-    User existing = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    if(userRepository.findById(id) == null) {
+        throw new RuntimeException("Utilisateur introuvable");
+    }
 
     User updated = userMapper.toEntity(dto);
     updated.setIdUser(id);
