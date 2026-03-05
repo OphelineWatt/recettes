@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -48,5 +49,9 @@ public class Recettes {
     //cascade = CascadeType.ALL pour que les ingrédients soient supprimés si la recette est supprimée
     @OneToMany(mappedBy = "recette", cascade = CascadeType.ALL)
     private List<RecetteIngredient> ingredients;
+
+    // utilisateurs ayant mis cette recette en favoris (relation inverse)
+    @ManyToMany(mappedBy = "favoris")
+    private List<User> usersFavoris;
 
 }

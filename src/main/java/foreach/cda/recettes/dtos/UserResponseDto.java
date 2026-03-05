@@ -12,4 +12,7 @@ public class UserResponseDto {
     private Boolean role;
     private String telephone;
     private String mail;
+
+    // récettes en favoris – on retourne les objets complets
+    private java.util.List<RecettesResponseDto> favoris;
 }

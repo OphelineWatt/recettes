@@ -2,7 +2,6 @@ package foreach.cda.recettes.controllers;
 
 import java.util.List;
 
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties.Apiversion.Use;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,6 +65,22 @@ public RecettesResponseDto updateRecette(@PathVariable Integer userId, @PathVari
 @DeleteMapping("/{userId}/recettes/{idRecette}")
 public void deleteRecette(@PathVariable Integer userId, @PathVariable Integer idRecette) {
     recettesService.deleteRecette(idRecette);
+}
+
+// gestion des favoris
+@PostMapping("/{userId}/favoris/{recetteId}")
+public UserResponseDto addFavori(@PathVariable Integer userId, @PathVariable Integer recetteId) {
+    return userService.addFavorite(userId, recetteId);
+}
+
+@DeleteMapping("/{userId}/favoris/{recetteId}")
+public UserResponseDto removeFavori(@PathVariable Integer userId, @PathVariable Integer recetteId) {
+    return userService.removeFavorite(userId, recetteId);
+}
+
+@GetMapping("/{userId}/favoris")
+public java.util.List<RecettesResponseDto> listFavoris(@PathVariable Integer userId) {
+    return userService.getFavorites(userId);
 }
 
 }

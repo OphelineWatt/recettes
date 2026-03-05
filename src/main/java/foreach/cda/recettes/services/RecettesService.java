@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 import foreach.cda.recettes.dtos.RecettesRequestDto;
 import foreach.cda.recettes.dtos.RecettesResponseDto;
-import foreach.cda.recettes.dtos.UserRequestDto;
 import foreach.cda.recettes.entities.Recettes;
 import foreach.cda.recettes.entities.User;
 import foreach.cda.recettes.mappers.RecettesMapper;

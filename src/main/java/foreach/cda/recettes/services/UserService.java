@@ -5,9 +5,13 @@ import org.springframework.stereotype.Service;
 
 import foreach.cda.recettes.dtos.UserRequestDto;
 import foreach.cda.recettes.dtos.UserResponseDto;
+import foreach.cda.recettes.entities.Recettes;
 import foreach.cda.recettes.entities.User;
 import foreach.cda.recettes.mappers.UserMapper;
+import foreach.cda.recettes.mappers.RecettesMapper;
 import foreach.cda.recettes.repositories.UserRepository;
+import foreach.cda.recettes.dtos.RecettesResponseDto;
+import foreach.cda.recettes.repositories.RecettesRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -16,6 +20,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final RecettesRepository recettesRepository;
+    private final RecettesMapper recettesMapper;
 
     public UserResponseDto createUser(UserRequestDto dto) {
     
@@ -63,6 +69,47 @@ public void deleteUser(Integer id) {
         throw new RuntimeException("Utilisateur introuvable");
     }
     userRepository.deleteById(id);
+}
+
+// --- gestion des favoris -------------------------------------------
+public List<RecettesResponseDto> getFavorites(Integer userId) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    List<Recettes> fav = user.getFavoris();
+    if (fav == null || fav.isEmpty()) {
+        return List.of();
+    }
+    return fav.stream()
+              .map(recettesMapper::toDTO)
+              .toList();
+}
+
+public UserResponseDto addFavorite(Integer userId, Integer recetteId) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    Recettes recette = recettesRepository.findById(recetteId)
+            .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+    if (user.getFavoris() == null) {
+        user.setFavoris(new java.util.ArrayList<>());
+    }
+    if (user.getFavoris().contains(recette)) {
+        throw new RuntimeException("Recette déjà en favoris");
+    }
+    user.getFavoris().add(recette);
+    User saved = userRepository.save(user);
+    return userMapper.toDTO(saved);
+}
+
+public UserResponseDto removeFavorite(Integer userId, Integer recetteId) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    Recettes recette = recettesRepository.findById(recetteId)
+            .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+    if (user.getFavoris() == null || !user.getFavoris().remove(recette)) {
+        throw new RuntimeException("Recette non présente dans les favoris");
+    }
+    User saved = userRepository.save(user);
+    return userMapper.toDTO(saved);
 }
 
 

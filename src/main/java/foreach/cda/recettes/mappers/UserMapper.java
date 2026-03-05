@@ -6,7 +6,7 @@ import foreach.cda.recettes.dtos.UserRequestDto;
 import foreach.cda.recettes.dtos.UserResponseDto;
 import foreach.cda.recettes.entities.User;
 
-@Mapper(componentModel= "spring")
+@Mapper(componentModel= "spring", uses = {RecettesMapper.class})
 public interface UserMapper {
     
     UserResponseDto toDTO(User user);
