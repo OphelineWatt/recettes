@@ -10,6 +10,8 @@ import foreach.cda.recettes.entities.User;
 import foreach.cda.recettes.mappers.UserMapper;
 import foreach.cda.recettes.mappers.RecettesMapper;
 import foreach.cda.recettes.repositories.UserRepository;
+import foreach.cda.recettes.config.JwtUtil;
+import foreach.cda.recettes.config.PasswordUtil;
 import foreach.cda.recettes.dtos.RecettesResponseDto;
 import foreach.cda.recettes.repositories.RecettesRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class UserService {
     }
 
     User user = userMapper.toEntity(dto);
+    user.setPassword(PasswordUtil.encode(dto.getPassword()));
     
     User saved = userRepository.save(user);
 
@@ -52,14 +55,30 @@ public UserResponseDto findById(Integer id) {
 
 public UserResponseDto updateUser(Integer id, UserRequestDto dto) {
 
-    if(userRepository.findById(id) == null) {
-        throw new RuntimeException("Utilisateur introuvable");
+    User existing = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+
+    if (dto.getNom() != null) {
+        existing.setNom(dto.getNom());
+    }
+    if (dto.getPrenom() != null) {
+        existing.setPrenom(dto.getPrenom());
+    }
+    if (dto.getMail() != null) {
+        existing.setMail(dto.getMail());
+    }
+    if (dto.getTelephone() != null) {
+        existing.setTelephone(dto.getTelephone());
+    }
+    if (dto.getRole() != null) {
+        existing.setRole(dto.getRole());
+    }
+    if (dto.getPassword() != null) {
+        existing.setPassword(PasswordUtil.encode(dto.getPassword()));
     }
 
-    User updated = userMapper.toEntity(dto);
-    updated.setIdUser(id);
-
-    User saved = userRepository.save(updated);
+    User saved = userRepository.save(existing);
 
     return userMapper.toDTO(saved);
 }
@@ -71,7 +90,7 @@ public void deleteUser(Integer id) {
     userRepository.deleteById(id);
 }
 
-// --- gestion des favoris -------------------------------------------
+//  gestion des favoris
 public List<RecettesResponseDto> getFavorites(Integer userId) {
     User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
@@ -113,5 +132,19 @@ public UserResponseDto removeFavorite(Integer userId, Integer recetteId) {
 }
 
 
-
+    
+    public foreach.cda.recettes.dtos.UserLoginResponseDto login(foreach.cda.recettes.dtos.UserLoginRequestDto dto) {
+        User user = userRepository.findByMail(dto.getMail());
+        if (user == null || !PasswordUtil.matches(dto.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Identifiants incorrects");
+        }
+        String token = JwtUtil.generateToken(user);
+        foreach.cda.recettes.dtos.UserLoginResponseDto resp = new foreach.cda.recettes.dtos.UserLoginResponseDto();
+        resp.setToken(token);
+        resp.setIdUser(user.getIdUser());
+        resp.setRole(user.getRole());
+        resp.setMail(user.getMail());
+        return resp;
+    }
 }
+

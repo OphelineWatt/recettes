@@ -13,10 +13,31 @@ public class JwtUtil {
 
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes()); 
 
+    /**
+     * Génère un JWT minimaliste à partir d'un nom d'utilisateur.  
+     * Un surchargé prend un objet User pour pousser l'ID et le rôle
+     * en claims afin de faciliter la gestion des permissions.
+     */
     public static String generateToken(String username){
         try {
             return  Jwts.builder()
                     .setSubject(username)
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                    .signWith(key, SignatureAlgorithm.HS256)
+                    .compact();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return e.getMessage();
+        }
+    }
+
+    public static String generateToken(foreach.cda.recettes.entities.User user){
+        try {
+            return Jwts.builder()
+                    .setSubject(user.getMail())
+                    .claim("id", user.getIdUser())
+                    .claim("role", user.getRole() != null && user.getRole() ? "ADMIN" : "USER")
                     .setIssuedAt(new Date())
                     .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                     .signWith(key, SignatureAlgorithm.HS256)
@@ -38,5 +59,16 @@ public class JwtUtil {
 
     public static String extractUsername(String token){
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public static Integer extractUserId(String token){
+        Object val = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("id");
+        if (val instanceof Integer) return (Integer) val;
+        if (val instanceof Long) return ((Long) val).intValue();
+        return null;
+    }
+
+    public static String extractRole(String token){
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("role", String.class);
     }
 }

@@ -31,7 +31,18 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             if (username != null && JwtUtil.validateToken(token)) {
-                SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority("ROLE_USER"))));
+                // récupérer les informations supplémentaires
+                Integer userId = JwtUtil.extractUserId(token);
+                String roleClaim = JwtUtil.extractRole(token);
+                String grantedRole = "ROLE_USER";
+                if ("ADMIN".equalsIgnoreCase(roleClaim)) {
+                    grantedRole = "ROLE_ADMIN";
+                }
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(username, null,
+                                List.of(new SimpleGrantedAuthority(grantedRole)));
+                auth.setDetails(userId);
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
             filterChain.doFilter(request, response);
         } catch (Exception e) {
