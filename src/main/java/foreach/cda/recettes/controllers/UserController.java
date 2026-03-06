@@ -2,6 +2,11 @@ package foreach.cda.recettes.controllers;
 
 import java.util.List;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,12 +14,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import foreach.cda.recettes.dtos.RecettesRequestDto;
 import foreach.cda.recettes.dtos.RecettesResponseDto;
 import foreach.cda.recettes.dtos.UserRequestDto;
 import foreach.cda.recettes.dtos.UserResponseDto;
+import foreach.cda.recettes.services.PdfService;
 import foreach.cda.recettes.services.RecettesService;
 import foreach.cda.recettes.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +33,8 @@ public class UserController {
 
     private final UserService userService;
     private final RecettesService recettesService;
+    private final PdfService pdfService;
+    
 @PostMapping
     public UserResponseDto create(@RequestBody UserRequestDto dto) {
         return userService.createUser(dto);
@@ -124,6 +133,21 @@ public java.util.List<RecettesResponseDto> listFavoris(@PathVariable Integer use
         throw new RuntimeException("Accès refusé");
     }
     return userService.getFavorites(userId);
+}
+
+@GetMapping("/{userId}/recettes/{recetteId}/pdf")
+public ResponseEntity<byte[]> getPdf(@PathVariable Integer userId, @PathVariable Integer recetteId) {
+        RecettesResponseDto recette = recettesService.findById(recetteId);
+
+        byte[] pdfContent = pdfService.generateRecettesPdf(recette);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.attachment()
+                .filename("liste_recettes.pdf")
+                .build());
+
+        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
 }
 
 }

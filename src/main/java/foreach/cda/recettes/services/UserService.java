@@ -1,7 +1,9 @@
 package foreach.cda.recettes.services;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import foreach.cda.recettes.dtos.UserRequestDto;
 import foreach.cda.recettes.dtos.UserResponseDto;
@@ -136,8 +138,9 @@ public UserResponseDto removeFavorite(Integer userId, Integer recetteId) {
     public foreach.cda.recettes.dtos.UserLoginResponseDto login(foreach.cda.recettes.dtos.UserLoginRequestDto dto) {
         User user = userRepository.findByMail(dto.getMail());
         if (user == null || !PasswordUtil.matches(dto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Identifiants incorrects");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Identifiants incorrects");
         }
+        
         String token = JwtUtil.generateToken(user);
         foreach.cda.recettes.dtos.UserLoginResponseDto resp = new foreach.cda.recettes.dtos.UserLoginResponseDto();
         resp.setToken(token);

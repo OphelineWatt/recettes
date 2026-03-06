@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://127.0.0.1:8080/users/3
+method: DELETE
+order: 3000

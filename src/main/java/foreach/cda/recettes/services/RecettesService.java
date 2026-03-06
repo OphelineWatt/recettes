@@ -1,7 +1,9 @@
 package foreach.cda.recettes.services;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import foreach.cda.recettes.dtos.RecettesRequestDto;
 import foreach.cda.recettes.dtos.RecettesResponseDto;
@@ -25,7 +27,7 @@ public class RecettesService {
     Recettes recette = recettesMapper.toEntity(dto);
 
     User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
     recette.setUser(user);
     Recettes saved = recettesRepository.save(recette);
 

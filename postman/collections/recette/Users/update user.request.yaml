@@ -1,0 +1,21 @@
+$kind: http-request
+url: http://127.0.0.1:8080/users/2
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"nom\": \"Martin\",\r
+
+    \  \"prenom\": \"Lucas\",\r
+
+    \  \"mail\": \"lucas.martin@example.com\",\r
+
+    \  \"password\": \"123\",\r
+
+    \  \"telephone\": \"0622334455\",\r
+
+    \  \"role\": 0\r
+
+    }\r\n"
+order: 2000
