@@ -44,21 +44,21 @@ public List<RecettesResponseDto> findAll() {
 
 public RecettesResponseDto findById(Integer id) {
     Recettes recette = recettesRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recette introuvable"));
     return recettesMapper.toDTO(recette);
 }
 
 public RecettesResponseDto updateRecettes(Integer id, Integer idUser, RecettesRequestDto dto) {
 
     if(recettesRepository.findById(id) == null) {
-        throw new RuntimeException("Recette introuvable");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recette introuvable");
     }
 
     Recettes updated = recettesMapper.toEntity(dto);
     updated.setIdRecette(id);
 
      User user = userRepository.findById(idUser)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
 
     updated.setUser(user);
 
@@ -69,7 +69,7 @@ public RecettesResponseDto updateRecettes(Integer id, Integer idUser, RecettesRe
 
 public void deleteRecette(Integer id) {
     if (!recettesRepository.existsById(id)) {
-        throw new RuntimeException("Recette introuvable");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recette introuvable");
     }
     recettesRepository.deleteById(id);
 }

@@ -14,14 +14,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
+import foreach.cda.recettes.dtos.RecetteIngredientResponseDto;
 import foreach.cda.recettes.dtos.RecettesRequestDto;
 import foreach.cda.recettes.dtos.RecettesResponseDto;
 import foreach.cda.recettes.dtos.UserRequestDto;
 import foreach.cda.recettes.dtos.UserResponseDto;
 import foreach.cda.recettes.services.PdfService;
+import foreach.cda.recettes.services.RecetteIngredientService;
 import foreach.cda.recettes.services.RecettesService;
 import foreach.cda.recettes.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -34,120 +38,131 @@ public class UserController {
     private final UserService userService;
     private final RecettesService recettesService;
     private final PdfService pdfService;
-    
-@PostMapping
+    private final RecetteIngredientService ingredientRecetteService;
+
+    @PostMapping
     public UserResponseDto create(@RequestBody UserRequestDto dto) {
         return userService.createUser(dto);
     }
 
     @PostMapping("/login")
-    public foreach.cda.recettes.dtos.UserLoginResponseDto login(@RequestBody foreach.cda.recettes.dtos.UserLoginRequestDto dto) {
+    public foreach.cda.recettes.dtos.UserLoginResponseDto login(
+            @RequestBody foreach.cda.recettes.dtos.UserLoginRequestDto dto) {
         return userService.login(dto);
     }
-@GetMapping
-public List<UserResponseDto> findAll() {
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin()) {
-        throw new RuntimeException("Accès refusé");
-    }
-    return userService.findAll();
-}
 
-@GetMapping("/{id}")
-public UserResponseDto findById(@PathVariable Integer id) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !id.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    @GetMapping
+    public List<UserResponseDto> findAll() {
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin()) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return userService.findAll();
     }
-    return userService.findById(id);
-}
 
-@PutMapping("/{id}")
-public UserResponseDto update(@PathVariable Integer id, @RequestBody UserRequestDto dto) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !id.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    @GetMapping("/{id}")
+    public UserResponseDto findById(@PathVariable Integer id) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !id.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return userService.findById(id);
     }
-    return userService.updateUser(id, dto);
-}
 
-@DeleteMapping("/{id}")
-public void delete(@PathVariable Integer id) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !id.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    @PutMapping("/{id}")
+    public UserResponseDto update(@PathVariable Integer id, @RequestBody UserRequestDto dto) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !id.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return userService.updateUser(id, dto);
     }
-    userService.deleteUser(id);
-}
 
-//Gestion des recettes relié au client
-@PostMapping("/{userId}/recettes")
-public RecettesResponseDto createRecette(@PathVariable Integer userId, @RequestBody RecettesRequestDto dto) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Integer id) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !id.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        userService.deleteUser(id);
     }
-    return recettesService.createRecettes(dto, userId);
-}
 
-@PutMapping("/{userId}/recettes/{idRecette}")
-public RecettesResponseDto updateRecette(@PathVariable Integer userId, @PathVariable Integer idRecette, @RequestBody RecettesRequestDto dto) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    // Gestion des recettes relié au client
+    @PostMapping("/{userId}/recettes")
+    public RecettesResponseDto createRecette(@PathVariable Integer userId, @RequestBody RecettesRequestDto dto) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return recettesService.createRecettes(dto, userId);
     }
-    return recettesService.updateRecettes(idRecette, userId, dto);
-}
 
-@DeleteMapping("/{userId}/recettes/{idRecette}")
-public void deleteRecette(@PathVariable Integer userId, @PathVariable Integer idRecette) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    @PutMapping("/{userId}/recettes/{idRecette}")
+    public RecettesResponseDto updateRecette(@PathVariable Integer userId, @PathVariable Integer idRecette,
+            @RequestBody RecettesRequestDto dto) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return recettesService.updateRecettes(idRecette, userId, dto);
     }
-    recettesService.deleteRecette(idRecette);
-}
 
-// gestion des favoris
-@PostMapping("/{userId}/favoris/{recetteId}")
-public UserResponseDto addFavori(@PathVariable Integer userId, @PathVariable Integer recetteId) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    @DeleteMapping("/{userId}/recettes/{idRecette}")
+    public void deleteRecette(@PathVariable Integer userId, @PathVariable Integer idRecette) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        recettesService.deleteRecette(idRecette);
     }
-    return userService.addFavorite(userId, recetteId);
-}
 
-@DeleteMapping("/{userId}/favoris/{recetteId}")
-public UserResponseDto removeFavori(@PathVariable Integer userId, @PathVariable Integer recetteId) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    // gestion des favoris
+    @PostMapping("/{userId}/favoris/{recetteId}")
+    public UserResponseDto addFavori(@PathVariable Integer userId, @PathVariable Integer recetteId) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return userService.addFavorite(userId, recetteId);
     }
-    return userService.removeFavorite(userId, recetteId);
-}
 
-@GetMapping("/{userId}/favoris")
-public java.util.List<RecettesResponseDto> listFavoris(@PathVariable Integer userId) {
-    Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
-    if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
-        throw new RuntimeException("Accès refusé");
+    @DeleteMapping("/{userId}/favoris/{recetteId}")
+    public UserResponseDto removeFavori(@PathVariable Integer userId, @PathVariable Integer recetteId) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return userService.removeFavorite(userId, recetteId);
     }
-    return userService.getFavorites(userId);
-}
 
-@GetMapping("/{userId}/recettes/{recetteId}/pdf")
-public ResponseEntity<byte[]> getPdf(@PathVariable Integer userId, @PathVariable Integer recetteId) {
+    @GetMapping("/{userId}/favoris")
+    public java.util.List<RecettesResponseDto> listFavoris(@PathVariable Integer userId) {
+        Integer current = foreach.cda.recettes.config.SecurityUtil.getCurrentUserId();
+        if (!foreach.cda.recettes.config.SecurityUtil.isAdmin() && !userId.equals(current)) {
+            throw new RuntimeException("Accès refusé");
+        }
+        return userService.getFavorites(userId);
+    }
+
+    @GetMapping("/{userId}/recettes/{recetteId}/pdf")
+    public ResponseEntity<byte[]> getPdf(@PathVariable Integer userId,
+            @PathVariable Integer recetteId) {
+
         RecettesResponseDto recette = recettesService.findById(recetteId);
+        List<RecetteIngredientResponseDto> ingredients = ingredientRecetteService.findByRecette(recetteId);
 
-        byte[] pdfContent = pdfService.generateRecettesPdf(recette);
+        try {
+            byte[] pdf = pdfService.generateRecettesPdf(recette, ingredients);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename("liste_recettes.pdf")
-                .build());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=recette.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdf);
 
-        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
-}
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Erreur lors de la génération du PDF");
+        }
+    }
 
 }

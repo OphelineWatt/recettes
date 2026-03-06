@@ -30,7 +30,7 @@ public class UserService {
     public UserResponseDto createUser(UserRequestDto dto) {
     
     if (userRepository.findByMail(dto.getMail()) != null) {
-        throw new RuntimeException("Un utilisateur avec cet email existe déjà.");
+        throw new ResponseStatusException(HttpStatus.CONFLICT,"Un utilisateur avec cet email existe déjà.");
     }
 
     User user = userMapper.toEntity(dto);
@@ -51,14 +51,14 @@ public List<UserResponseDto> findAll() {
 
 public UserResponseDto findById(Integer id) {
     User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Utilisateur introuvable"));
     return userMapper.toDTO(user);
 }
 
 public UserResponseDto updateUser(Integer id, UserRequestDto dto) {
 
     User existing = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Utilisateur introuvable"));
 
 
     if (dto.getNom() != null) {
@@ -87,7 +87,7 @@ public UserResponseDto updateUser(Integer id, UserRequestDto dto) {
 
 public void deleteUser(Integer id) {
     if (!userRepository.existsById(id)) {
-        throw new RuntimeException("Utilisateur introuvable");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Utilisateur introuvable");
     }
     userRepository.deleteById(id);
 }
@@ -95,7 +95,7 @@ public void deleteUser(Integer id) {
 //  gestion des favoris
 public List<RecettesResponseDto> getFavorites(Integer userId) {
     User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Utilisateur introuvable"));
     List<Recettes> fav = user.getFavoris();
     if (fav == null || fav.isEmpty()) {
         return List.of();
@@ -107,14 +107,14 @@ public List<RecettesResponseDto> getFavorites(Integer userId) {
 
 public UserResponseDto addFavorite(Integer userId, Integer recetteId) {
     User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Utilisateur introuvable"));
     Recettes recette = recettesRepository.findById(recetteId)
-            .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Recette introuvable"));
     if (user.getFavoris() == null) {
         user.setFavoris(new java.util.ArrayList<>());
     }
     if (user.getFavoris().contains(recette)) {
-        throw new RuntimeException("Recette déjà en favoris");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Recette déjà en favoris");
     }
     user.getFavoris().add(recette);
     User saved = userRepository.save(user);
@@ -123,11 +123,11 @@ public UserResponseDto addFavorite(Integer userId, Integer recetteId) {
 
 public UserResponseDto removeFavorite(Integer userId, Integer recetteId) {
     User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,"Utilisateur introuvable"));
     Recettes recette = recettesRepository.findById(recetteId)
-            .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,"Recette introuvable"));
     if (user.getFavoris() == null || !user.getFavoris().remove(recette)) {
-        throw new RuntimeException("Recette non présente dans les favoris");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Recette non présente dans les favoris");
     }
     User saved = userRepository.save(user);
     return userMapper.toDTO(saved);

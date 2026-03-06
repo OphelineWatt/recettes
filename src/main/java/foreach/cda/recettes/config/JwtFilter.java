@@ -20,17 +20,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
             final String header = request.getHeader("Authorization");
 
-            String username = null;
+            String prenom = null;
             String token = null;
             System.out.println(header);
             if (header != null && header.startsWith("Bearer ")) {
                 token = header.substring(7);
                 if (JwtUtil.validateToken(token)) {
-                    username = JwtUtil.extractUsername(token);
+                    prenom = JwtUtil.extractUsername(token);
                 }
             }
 
-            if (username != null && JwtUtil.validateToken(token)) {
+            if (prenom != null && JwtUtil.validateToken(token)) {
                 // récupérer les informations supplémentaires
                 Integer userId = JwtUtil.extractUserId(token);
                 String roleClaim = JwtUtil.extractRole(token);
@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     grantedRole = "ROLE_ADMIN";
                 }
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(username, null,
+                        new UsernamePasswordAuthenticationToken(prenom, null,
                                 List.of(new SimpleGrantedAuthority(grantedRole)));
                 auth.setDetails(userId);
                 SecurityContextHolder.getContext().setAuthentication(auth);

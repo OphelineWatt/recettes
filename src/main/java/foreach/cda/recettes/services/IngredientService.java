@@ -2,7 +2,9 @@ package foreach.cda.recettes.services;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import foreach.cda.recettes.dtos.IngredientRequestDto;
 import foreach.cda.recettes.dtos.IngredientResponseDto;
@@ -21,7 +23,7 @@ public class IngredientService {
     public IngredientResponseDto createIngredient(IngredientRequestDto dto) {
         List<Ingredient> existing = ingredientRepository.findByLibelle(dto.getLibelle());
         if (!existing.isEmpty()) {
-            throw new RuntimeException("Un ingrédient avec ce libellé existe déjà.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Un ingrédient avec ce libellé existe déjà.");
         }
         Ingredient ingredient = ingredientMapper.toEntity(dto);
         Ingredient saved = ingredientRepository.save(ingredient);
@@ -35,13 +37,13 @@ public class IngredientService {
 
     public IngredientResponseDto findById(Integer id) {
         Ingredient ingr = ingredientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ingrédient introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingrédient introuvable"));
         return ingredientMapper.toDTO(ingr);
     }
 
     public IngredientResponseDto updateIngredient(Integer id, IngredientRequestDto dto) {
         if (!ingredientRepository.existsById(id)) {
-            throw new RuntimeException("Ingrédient introuvable");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingrédient introuvable");
         }
         Ingredient updated = ingredientMapper.toEntity(dto);
         updated.setIdIngredient(id);
@@ -51,7 +53,7 @@ public class IngredientService {
 
     public void deleteIngredient(Integer id) {
         if (!ingredientRepository.existsById(id)) {
-            throw new RuntimeException("Ingrédient introuvable");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingrédient introuvable");
         }
         ingredientRepository.deleteById(id);
     }

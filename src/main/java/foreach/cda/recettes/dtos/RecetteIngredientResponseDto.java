@@ -11,4 +11,5 @@ public class RecetteIngredientResponseDto {
     private Integer ingredientId;
     private double quantite;
     private String preparation;
+    private String ingredientLibelle;
 }

@@ -2,7 +2,9 @@ package foreach.cda.recettes.services;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import foreach.cda.recettes.dtos.RecetteIngredientRequestDto;
 import foreach.cda.recettes.dtos.RecetteIngredientResponseDto;
@@ -25,15 +27,13 @@ public class RecetteIngredientService {
     private final RecetteIngredientMapper mapper;
 
     public RecetteIngredientResponseDto create(RecetteIngredientRequestDto dto) {
-        // verify recette and ingredient exist
         Recettes recette = recettesRepository.findById(dto.getRecetteId())
-                .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recette introuvable"));
         Ingredient ingredient = ingredientRepository.findById(dto.getIngredientId())
-                .orElseThrow(() -> new RuntimeException("Ingrédient introuvable"));
-        // duplicate guard
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingrédient introuvable"));
         RecetteIngredient existing = riRepository.findByRecetteAndIngredient(recette, ingredient);
         if (existing != null) {
-            throw new RuntimeException("Cette recette contient déjà cet ingrédient");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cette recette contient déjà cet ingrédient");
         }
         RecetteIngredient entity = mapper.toEntity(dto);
         entity.setRecette(recette);
@@ -48,18 +48,18 @@ public class RecetteIngredientService {
 
     public RecetteIngredientResponseDto findById(Integer id) {
         RecetteIngredient ri = riRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Association recette/ingrédient introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Association recette/ingrédient introuvable"));
         return mapper.toDTO(ri);
     }
 
     public RecetteIngredientResponseDto update(Integer id, RecetteIngredientRequestDto dto) {
         if (!riRepository.existsById(id)) {
-            throw new RuntimeException("Association recette/ingrédient introuvable");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Association recette/ingrédient introuvable");
         }
         Recettes recette = recettesRepository.findById(dto.getRecetteId())
-                .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recette introuvable"));
         Ingredient ingredient = ingredientRepository.findById(dto.getIngredientId())
-                .orElseThrow(() -> new RuntimeException("Ingrédient introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingrédient introuvable"));
 
         RecetteIngredient entity = mapper.toEntity(dto);
         entity.setId(id);
@@ -71,20 +71,20 @@ public class RecetteIngredientService {
 
     public void delete(Integer id) {
         if (!riRepository.existsById(id)) {
-            throw new RuntimeException("Association recette/ingrédient introuvable");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Association recette/ingrédient introuvable");
         }
         riRepository.deleteById(id);
     }
 
     public List<RecetteIngredientResponseDto> findByRecette(Integer recetteId) {
         Recettes recette = recettesRepository.findById(recetteId)
-                .orElseThrow(() -> new RuntimeException("Recette introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recette introuvable"));
         return riRepository.findByRecette(recette).stream().map(mapper::toDTO).toList();
     }
 
     public List<RecetteIngredientResponseDto> findByIngredient(Integer ingredientId) {
         Ingredient ingredient = ingredientRepository.findById(ingredientId)
-                .orElseThrow(() -> new RuntimeException("Ingrédient introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingrédient introuvable"));
         return riRepository.findByIngredient(ingredient).stream().map(mapper::toDTO).toList();
     }
 }
